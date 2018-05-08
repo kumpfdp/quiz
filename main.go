@@ -11,7 +11,7 @@ import (
 
 const (
 	CsvPath   = "problems.csv"
-	TimeLimit = 10
+	TimeLimit = 12
 )
 
 func main() {
