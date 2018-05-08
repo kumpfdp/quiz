@@ -1,16 +1,17 @@
 package Svc
 
 import (
-	"bufio"
 	"encoding/csv"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"strings"
+	"time"
+	"bufio"
 )
 
-var reader bufio.Reader
+var reader *bufio.Reader
 
 type Quiz interface {
 	LoadQuestions()
@@ -22,11 +23,13 @@ type quiz struct {
 	QuestionCsvPath    string
 	Questions          []Question
 	CorrectAnswerCount int
+	TimeLimit int
 }
 
-func NewQuiz(questionCsvPath string) Quiz {
+func NewQuiz(questionCsvPath string, timeLimit int) Quiz {
 	return &quiz{
 		QuestionCsvPath: questionCsvPath,
+		TimeLimit: timeLimit,
 	}
 }
 
@@ -64,9 +67,51 @@ func (q *quiz) NumberOfQuestions() int {
 }
 
 func (q *quiz) Start() {
-	fmt.Println("Starting the quiz... Good luck!")
+	fmt.Printf("This is a timed quiz. You have %v seconds to finish. \n", q.TimeLimit)
+	fmt.Print("Ready to begin? (y/n) ")
 
-	reader := bufio.NewReader(os.Stdin)
+	reader = bufio.NewReader(os.Stdin)
+	r, err := reader.ReadString('\n')
+	if err != nil {
+		log.Fatal(err.Error())
+		return
+	}
+
+	if strings.Trim(r, "\n") == "n" {
+		fmt.Println("Ending the quiz... ")
+		return
+	}
+
+	quizChan := make(chan bool)
+	timerChan := make(chan bool)
+
+	go StartTimer(time.Second * time.Duration(q.TimeLimit), timerChan)
+	go StartQuiz(q, quizChan)
+
+	select {
+	case <- timerChan:
+		fmt.Println("\n *** Time's up! *** ")
+		break
+	case <- quizChan:
+		break
+	}
+
+	fmt.Printf("%v of %v correct!", q.CorrectAnswerCount, q.NumberOfQuestions())
+}
+
+func StartTimer(d time.Duration, ch chan<- bool) {
+	defer close(ch)
+
+	timerChan := time.NewTimer(d).C
+	<-timerChan
+
+	ch <- true
+}
+
+func StartQuiz(q *quiz, ch chan<- bool) {
+	defer close(ch)
+
+	fmt.Println("Starting the quiz... Good luck!")
 
 	for _, quest := range q.Questions {
 		quest.AskQuestion()
@@ -83,5 +128,5 @@ func (q *quiz) Start() {
 		}
 	}
 
-	fmt.Printf("%v of %v correct!", q.CorrectAnswerCount, q.NumberOfQuestions())
+	ch <- true
 }

@@ -5,14 +5,15 @@ import (
 )
 
 const (
-	csvPath = "problems.csv"
+	CsvPath = "problems.csv"
+	TimeLimit = 10
 )
 
 var correctAnswerCount int
 var incorrectAnswerCount int
 
 func main() {
-	quiz := Svc.NewQuiz(csvPath)
+	quiz := Svc.NewQuiz(CsvPath, TimeLimit)
 	quiz.LoadQuestions()
 
 	quiz.Start()
