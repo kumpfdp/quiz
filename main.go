@@ -1,4 +1,4 @@
-package quiz
+package main
 
 import (
 	"github.com/kumpfdp/quiz/Svc"
