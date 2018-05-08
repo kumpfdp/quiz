@@ -11,16 +11,18 @@ import (
 )
 
 const (
-	DefaultCsvPath   = "problems.csv"
-	DefaultTimeLimit = 30
+	DefaultCsvPath          = "problems.csv"
+	DefaultTimeLimit        = 30
+	DefaultShuffleQuestions = true
 )
 
 func main() {
 	f := flag.String("file", DefaultCsvPath, "Path to CSV quiz file")
 	tl := flag.Int("timelimit", DefaultTimeLimit, "Time limit to complete the quiz")
+	sh := flag.Bool("shuffle", DefaultShuffleQuestions, "Shuffle quiz questions loaded")
 	flag.Parse()
 
-	quiz := Svc.NewQuiz(*f, *tl)
+	quiz := Svc.NewQuiz(*f, *tl, *sh)
 	err := quiz.LoadQuestions()
 	if err != nil {
 		log.Fatal(err.Error())

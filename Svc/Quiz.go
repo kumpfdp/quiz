@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"os"
 	"strings"
 	"time"
@@ -21,6 +22,7 @@ type Quiz interface {
 	LoadQuestions() error
 	NumberOfQuestions() int
 	Start()
+	Shuffle()
 }
 
 type quiz struct {
@@ -28,12 +30,14 @@ type quiz struct {
 	Questions          []Question
 	CorrectAnswerCount int
 	TimeLimit          int
+	ShuffleQuestions   bool
 }
 
-func NewQuiz(questionCsvPath string, timeLimit int) Quiz {
+func NewQuiz(questionCsvPath string, timeLimit int, shuffle bool) Quiz {
 	return &quiz{
-		QuestionCsvPath: questionCsvPath,
-		TimeLimit:       timeLimit,
+		QuestionCsvPath:  questionCsvPath,
+		TimeLimit:        timeLimit,
+		ShuffleQuestions: shuffle,
 	}
 }
 
@@ -63,6 +67,10 @@ func (q *quiz) LoadQuestions() error {
 		}
 
 		q.Questions = append(q.Questions, NewQuestion(record[0], record[1]))
+	}
+
+	if q.ShuffleQuestions {
+		q.Shuffle()
 	}
 
 	return nil
@@ -120,4 +128,14 @@ func StartQuiz(q *quiz, ch chan<- bool) {
 	}
 
 	ch <- true
+}
+
+// from https://www.calhoun.io/how-to-shuffle-arrays-and-slices-in-go/
+func (q *quiz) Shuffle() {
+	var randomized []Question
+	r := rand.New(rand.NewSource(time.Now().Unix()))
+	for _, i := range r.Perm(len(q.Questions)) {
+		randomized = append(randomized, q.Questions[i])
+	}
+	q.Questions = randomized
 }

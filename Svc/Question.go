@@ -23,7 +23,7 @@ func NewQuestion(q, a string) Question {
 }
 
 func (q question) EvaluateAnswer(userAnswer string) bool {
-	return strings.Compare(q.Answer, userAnswer) == 0
+	return strings.Compare(strings.ToUpper(q.Answer), strings.ToUpper(userAnswer)) == 0
 }
 
 func (q question) AskQuestion() {
