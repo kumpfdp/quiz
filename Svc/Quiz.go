@@ -18,7 +18,7 @@ func init() {
 }
 
 type Quiz interface {
-	LoadQuestions()
+	LoadQuestions() error
 	NumberOfQuestions() int
 	Start()
 }
@@ -37,19 +37,19 @@ func NewQuiz(questionCsvPath string, timeLimit int) Quiz {
 	}
 }
 
-func (q *quiz) LoadQuestions() {
+func (q *quiz) LoadQuestions() error {
 	// read in csv
 	file, err := os.Open(q.QuestionCsvPath)
 	if err != nil {
 		fmt.Println(err.Error())
-		return
+		return err
 	}
 	defer file.Close()
 
 	reader := csv.NewReader(file)
 	if err != nil {
 		fmt.Println(err.Error())
-		return
+		return err
 	}
 
 	// build out question and answers
@@ -64,6 +64,8 @@ func (q *quiz) LoadQuestions() {
 
 		q.Questions = append(q.Questions, NewQuestion(record[0], record[1]))
 	}
+
+	return nil
 }
 
 func (q *quiz) NumberOfQuestions() int {
@@ -85,7 +87,7 @@ func (q *quiz) Start() {
 		break
 	}
 
-	fmt.Printf("%v of %v correct!", q.CorrectAnswerCount, q.NumberOfQuestions())
+	fmt.Printf("%v of %v correct!\n", q.CorrectAnswerCount, q.NumberOfQuestions())
 }
 
 func StartTimer(d time.Duration, ch chan<- bool) {

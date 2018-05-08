@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"github.com/kumpfdp/quiz/Svc"
 	"log"
@@ -10,15 +11,24 @@ import (
 )
 
 const (
-	CsvPath   = "problems.csv"
-	TimeLimit = 12
+	DefaultCsvPath   = "problems.csv"
+	DefaultTimeLimit = 30
 )
 
 func main() {
-	quiz := Svc.NewQuiz(CsvPath, TimeLimit)
-	quiz.LoadQuestions()
+	f := flag.String("file", DefaultCsvPath, "Path to CSV quiz file")
+	tl := flag.Int("timelimit", DefaultTimeLimit, "Time limit to complete the quiz")
+	flag.Parse()
 
-	fmt.Printf("This is a timed quiz. You have %v seconds to finish. \n", TimeLimit)
+	fmt.Println(*f)
+
+	quiz := Svc.NewQuiz(*f, *tl)
+	err := quiz.LoadQuestions()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	fmt.Printf("This is a timed quiz. You have %v seconds to finish. \n", *tl)
 	fmt.Print("Ready to begin? (y/n) ")
 
 	reader := bufio.NewReader(os.Stdin)
