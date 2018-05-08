@@ -20,8 +20,6 @@ func main() {
 	tl := flag.Int("timelimit", DefaultTimeLimit, "Time limit to complete the quiz")
 	flag.Parse()
 
-	fmt.Println(*f)
-
 	quiz := Svc.NewQuiz(*f, *tl)
 	err := quiz.LoadQuestions()
 	if err != nil {
